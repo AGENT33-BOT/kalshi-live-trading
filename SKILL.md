@@ -68,6 +68,7 @@ kalshi-cli --prod orders create --market "TICKER" --side yes --qty 10 --price XX
 ## CRON JOBS
 - Check balance every 6 hours
 - P&L report every 24 hours
+- **Auto research + bet every 1 hour** (new!)
 
 ## FILES
 - analyze_kalshi.py - P&L analyzer
