@@ -1,47 +1,48 @@
 # kalshi-live-trading
-Autonomous prediction market trading on Kalshi using WebSocket for live data.
+Autonomous prediction market trading on Kalshi with live research.
 
-## Strategy Update (April 2026)
+## What This Does
+- WebSocket live market data
+- LIVE ESPN research (NBA scores)
+- Auto-scan for value plays (20-80c)
+- Places bets automatically
+- Telegram alerts
 
-### WINNING Categories (Use These)
-- NBA Game Winner (NBAGAME) - Simple, 60%+ win rate
-- ATP Tennis Match Winner (ATPMATCH) - Simple, 55%+ win rate
-- Colombia Soccer (DIMAYOR) - Good results
-
-### LOSING Categories (AVOID)
-- NHL player props (goals, points, shots) - 85% loss rate
-- Multi-game parlays - Too complex
-- Crypto price markets (BTC/ETH) - All lost
-- WTA Tennis - Bad results
-- Player mentions/props
-
-## Updated Files
+## Files
 
 | File | Purpose |
 |------|---------|
 | `kalshi-websocket-live.py` | Test WebSocket |
-| `kalshi-live-bot-strategy.py` | Strategy bot |
-| `analyze_kalshi.py` | P&L analyzer |
+| `kalshi-auto-bet-v2.py` | Auto-bet with LIVE research |
+| `kalshi-pnl-report.py` | P&L report |
 
-## Commands
+## Operating Procedure
+
+### DAILY WORKFLOW
+1. Check balance: `kalshi-cli --prod portfolio balance`
+2. Research: Run `python kalshi-auto-bet-v2.py`
+3. Or ask "research for opportunity"
+
+### BETTING RULES
+- **WINNING**: NBAGAME, ATPMATCH (simple winners)
+- **LOSING**: NHL props, multi-game parlays, crypto, WTA
+
+## Usage
 
 ```bash
-# Test WebSocket
-python kalshi-websocket-live.py
-
-# Run strategy bot
-python kalshi-live-bot-strategy.py
-
-# Check positions
-kalshi-cli --prod portfolio balance
+# Auto research + bet (with live data)
+python kalshi-auto-bet-v2.py
 ```
 
-## Strategy Rules
-1. Only bet NBAGAME or ATPMATCH (simple winners)
-2. NO player props (NHLGOAL, NHLPTS, etc.)
-3. NO multi-game parlays
-4. NO crypto markets
-5. Research first, then bet
+## Strategy
+1. Only bet NBA/ATP simple game winners
+2. Avoid player props
+3. Add live research before bets
+4. Diversify across matches
 
-## License
-MIT
+## Cron Jobs
+- Auto research every 1 hour (has execution issues)
+- P&L report every 24 hours
+
+## GitHub
+https://github.com/AGENT33-BOT/kalshi-live-trading
