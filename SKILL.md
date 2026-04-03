@@ -1,71 +1,74 @@
-# SKILL: kalshi-live-trading
+# SKILL: kalshi-trading-strategy
 
-Autonomous prediction market trading on Kalshi. Trade sports, politics, and events with real money.
+Automated prediction market trading on Kalshi with research-based strategy.
 
-## Trigger Phrases
-- "trade on kalshi"
-- "kalshi trading"
-- "prediction markets"
-- "start kalshi bot"
+## Operating Procedure
 
-## What This Skill Does
+### DAILY WORKFLOW
 
-1. **Start Autonomous Bot** - Scans for value plays (30-70¢) every 5 minutes
-2. **Production Trading** - Uses real money on Kalshi
-3. **Telegram Alerts** - Notifies you when trades are placed
-4. **Dashboard** - Monitor positions and trades
+1. **CHECK BALANCE FIRST**
+   ```bash
+   kalshi-cli --prod portfolio balance
+   ```
 
-## Setup Required
+2. **RESEARCH LIVE MARKETS**
+   - Check ESPN for live NBA scores/records
+   - Check tennis schedules
+   - Only bet on categories with POSITIVE history
 
-### Install kalshi-cli
-```powershell
-go install github.com/6missedcalls/kalshi-cli/cmd/kalshi-cli@latest
-```
+3. **FILTER MARKETS (Use WebSocket)**
+   - ONLY: NBAGAME, ATPMATCH (simple game winners)
+   - AVOID: NHL props, multi-game parlays, crypto, WTA
 
-### Login
-```powershell
-# Demo mode
-kalshi-cli auth login --api-key-id "YOUR_KEY" --private-key-file "path\to\key.pem"
+4. **PLACE BETS (Limit Orders)**
+   - Use available balance wisely
+   - Target 50-80c odds (value plays)
 
-# Production (real money)
-kalshi-cli auth login --api-key-id "YOUR_KEY" --private-key-file "path\to\key.pem" --prod
-```
+### WINNING CATEGORIES
+| Category | Win Rate | Notes |
+|----------|---------|-------|
+| NBAGAME (NBA winner) | 60%+ | Simple game outcome |
+| ATPMATCH (ATP tennis) | 55%+ | Match winner only |
+| DIMAYOR (Colombia soccer) | Good | Won on Boyaca Chico |
 
-## Commands
+### LOSING CATEGORIES (AVOID)
+| Category | Loss Rate | Notes |
+|----------|----------|-------|
+| NHLGOAL (NHL goals) | 85% | Player props |
+| NHLPTS, NHLAST | 80%+ | Points/shots |
+| Multi-game parlays | 70%+ | Too complex |
+| Crypto markets | 100% | All lost |
+| WTA Tennis | 60%+ | Bad results |
 
-### Check Balance
-```powershell
+### COMMANDS
+
+```bash
+# Check balance
 kalshi-cli --prod portfolio balance
+
+# Check settlements (wins/losses)
+kalshi-cli --prod portfolio settlements --limit 50
+
+# View positions
+kalshi-cli --prod portfolio positions
 ```
 
-### List Markets
-```powershell
-kalshi-cli --prod markets list --status open --limit 20
+### PLACE ORDER FORMAT
+```bash
+kalshi-cli --prod orders create --market "TICKER" --side yes --qty 10 --price XX --yes
 ```
 
-### Place Order
-```powershell
-kalshi-cli --prod orders create --market TICKER --side yes --qty 5 --price 50
-```
+### EXAMPLE BETTING WORKFLOW
+1. Research games on ESPN
+2. Find NBAGAME or ATPMATCH markets
+3. Check if odds make sense vs real records
+4. Place limit order at target price
+5. Wait for fill or cancel
 
-## Running the Bot
+## CRON JOBS
+- Check balance every 6 hours
+- P&L report every 24 hours
 
-Save as `kalshi-prod-bot.ps1` and run:
-```powershell
-.\kalshi-prod-bot.ps1
-```
-
-The bot:
-- Scans every 5 minutes
-- buys 30-70¢ contracts (value plays)
-- sends Telegram alerts
-- runs continuously
-
-## Cron Jobs
-
-- Check bot status every 30 minutes
-- Monitor for new live sports markets
-
-## Files
-- `kalshi-prod-bot.ps1` - Main trading bot
-- `kalshi-dashboard.ps1` - Monitoring dashboard
+## FILES
+- analyze_kalshi.py - P&L analyzer
+- kalshi-websocket-live.py - Market scanner
