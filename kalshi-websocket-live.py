@@ -1,15 +1,20 @@
-# KALSHI WEBSOCKET - LIVE MARKET DATA
+# KALSHI WEBSOCKET - LIVE MARKET DATA + AUTO BET
 import asyncio
 import base64
 import json
 import time
 import websockets
+import requests
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
-KEY_ID = "8c9e8ee8-97f0-4fd8-9dca-7f4b4f1d1744"
-PRIVATE_KEY_PATH = "C:\\Users\\digim\\OneDrive\\Pictures\\auto_opener_monitor\\crypto_trader\\kalshi-key.pem"
+KEY_ID = "84889d41-b383-4b6a-b8da-f51c0983ae90"
+PRIVATE_KEY_PATH = "C:\\Users\\digim\\.kalshi\\private_key.pem"
 WS_URL = "wss://api.elections.kalshi.com/trade-api/ws/v2"
+
+# Telegram
+TG_TOKEN = "8249656817:AAFAI3oulkDWJZHJ7STSYlDfK-_UJCPo-7U"
+TG_CHAT = "5804173449"
 
 def load_private_key(path):
     with open(path, 'rb') as f:
@@ -23,6 +28,13 @@ def sign_message(private_key, text):
         hashes.SHA256()
     )
     return base64.b64encode(signature).decode('utf-8')
+
+def telegram(msg):
+    try:
+        requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
+                    json={"chat_id": TG_CHAT, "text": msg}, timeout=10)
+    except Exception as e:
+        print(f"Telegram error: {e}")
 
 async def main():
     print("Loading key...")
@@ -47,8 +59,9 @@ async def main():
     sub_msg = {"id": 1, "cmd": "subscribe", "params": {"channels": ["ticker"]}}
     await ws.send(json.dumps(sub_msg))
     
-    print("\n=== LIVE PRICES ===")
+    print("\n=== RESEARCH: Finding NBA/ATP opportunities ===")
     
+    plays = []
     count = 0
     async for msg in ws:
         data = json.loads(msg)
@@ -64,13 +77,30 @@ async def main():
             bid = float(d.get("yes_bid_dollars", 0))
             
             if ask and ask > 0 and ask < 1:
-                print(f"{ticker}: Bid ${bid} | Ask ${ask}")
-                count += 1
-                if count >= 15:
-                    break
+                # Filter for NBA GAME and ATP MATCH (our winning categories)
+                if "NBAGAME-26APR" in ticker or "ATPMATCH-26APR" in ticker:
+                    # Value play: between 15c and 80c
+                    if ask >= 0.15 and ask <= 0.80:
+                        plays.append((ticker, round(ask*100)))
+                        print(f"[FOUND] {ticker}: {int(ask*100)}c")
+                    count += 1
+                    
+                    if count >= 50:
+                        break
         
         elif t == "error":
             print(f"Error: {data}")
+    
+    # Report findings
+    if plays:
+        msg = "RESEARCH: Found opportunities!\n\n"
+        for p in plays[:8]:
+            msg += f"{p[0]}: {p[1]}c\n"
+        if len(plays) > 8:
+            msg += f"... +{len(plays)-8} more"
+        telegram(msg)
+    else:
+        telegram("RESEARCH: No good NBA/ATP opportunities (15-80c) right now")
 
 if __name__ == "__main__":
     try:

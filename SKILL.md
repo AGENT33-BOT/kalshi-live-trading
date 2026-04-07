@@ -1,44 +1,66 @@
-# SKILL: kalshi-trading-strategy
+---
+name: kalshi-trading-strategy
+description: Automated prediction market trading on Kalshi with research-based strategy. Only bet when markets have liquidity.
+metadata:
+  version: 2.0.0
+  author: Pablo
+  updated: 2026-04-07
+---
 
-Automated prediction market trading on Kalshi with research-based strategy.
+# KALSHI TRADING SKILL - VERSION 2.0
+
+**IMPORTANT: Only bet when market has actual liquidity!**
 
 ## Operating Procedure
 
 ### DAILY WORKFLOW
 
-1. **CHECK BALANCE FIRST**
+1. **CHECK LIQUIDITY FIRST**
+   ```bash
+   kalshi-cli --prod markets get "MARKET_TICKER"
+   ```
+   - Must show bid/ask > $0.00 to place bets
+   - If $0.00 = no liquidity = don't bet
+
+2. **CHECK BALANCE**
    ```bash
    kalshi-cli --prod portfolio balance
    ```
 
-2. **RESEARCH LIVE MARKETS**
-   - Check ESPN for live NBA scores/records
-   - Check tennis schedules
-   - Only bet on categories with POSITIVE history
+3. **RESEARCH LIVE MARKETS (with liquidity)**
+   - Use WebSocket script: `kalshi-websocket-live.py`
+   - Filter for markets with actual prices (not $0.00)
 
-3. **FILTER MARKETS (Use WebSocket)**
-   - ONLY: NBAGAME, ATPMATCH (simple game winners)
-   - AVOID: NHL props, multi-game parlays, crypto, WTA
+4. **PLACE BETS ONLY WHEN:**
+   - Market has bid/ask > $0.00 (liquidity exists)
+   - Game is live or starting soon
+   - Price is 20-70c range (best value)
 
-4. **PLACE BETS (Limit Orders)**
-   - Use available balance wisely
-   - Target 50-80c odds (value plays)
+### NEW STRATEGY: Wait for Liquidity
+
+**OLD (Lost money):**
+- Placed 90+ orders on markets with $0.00
+- Orders went through but 0 quantity filled
+- Waste of capital
+
+**NEW (Focus on liquidity):**
+1. Only bet on markets showing actual trading
+2. Test with small orders first to confirm fill
+3. Wait for games to START before betting
+4. Max 3 bets per day (quality over quantity)
 
 ### WINNING CATEGORIES
 | Category | Win Rate | Notes |
 |----------|---------|-------|
 | NBAGAME (NBA winner) | 60%+ | Simple game outcome |
 | ATPMATCH (ATP tennis) | 55%+ | Match winner only |
-| DIMAYOR (Colombia soccer) | Good | Won on Boyaca Chico |
 
 ### LOSING CATEGORIES (AVOID)
 | Category | Loss Rate | Notes |
 |----------|----------|-------|
 | NHLGOAL (NHL goals) | 85% | Player props |
-| NHLPTS, NHLAST | 80%+ | Points/shots |
-| Multi-game parlays | 70%+ | Too complex |
 | Crypto markets | 100% | All lost |
-| WTA Tennis | 60%+ | Bad results |
+| Markets with $0.00 liquidity | N/A | Can't fill orders |
 
 ### COMMANDS
 
@@ -46,30 +68,29 @@ Automated prediction market trading on Kalshi with research-based strategy.
 # Check balance
 kalshi-cli --prod portfolio balance
 
-# Check settlements (wins/losses)
-kalshi-cli --prod portfolio settlements --limit 50
+# Check market liquidity
+kalshi-cli --prod markets get "TICKER"
 
-# View positions
-kalshi-cli --prod portfolio positions
+# Check settlements
+kalshi-cli --prod portfolio settlements --limit 20
+
+# View orders
+kalshi-cli --prod orders list
 ```
 
-### PLACE ORDER FORMAT
+### PLACE ORDER (Only if liquidity exists!)
 ```bash
 kalshi-cli --prod orders create --market "TICKER" --side yes --qty 10 --price XX --yes
 ```
 
-### EXAMPLE BETTING WORKFLOW
-1. Research games on ESPN
-2. Find NBAGAME or ATPMATCH markets
-3. Check if odds make sense vs real records
-4. Place limit order at target price
-5. Wait for fill or cancel
+### FILES
+- kalshi-websocket-live.py - Market scanner (checks liquidity)
+- kalshi-research-bot.py - Research bot
+- SKILL.md - This file
 
-## CRON JOBS
-- Check balance every 6 hours
-- P&L report every 24 hours
-- **Auto research + bet every 1 hour** (new!)
+### KEY LESSON
+**Liquidity > Odds!** 
+- A 30c odds with $0 liquidity = worthless
+- A 50c odds with $10k volume = actual tradeable
 
-## FILES
-- analyze_kalshi.py - P&L analyzer
-- kalshi-websocket-live.py - Market scanner
+Wait for live games with real trading volume before betting!

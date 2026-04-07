@@ -10,8 +10,8 @@ from cryptography.hazmat.primitives.asymmetric import padding
 import base64
 
 # Config
-KEY_ID = "8c9e8ee8-97f0-4fd8-9dca-7f4b4f1d1744"
-PRIVATE_KEY_PATH = r"C:\Users\digim\OneDrive\Pictures\auto_opener_monitor\crypto_trader\kalshi-key.pem"
+KEY_ID = "84889d41-b383-4b6a-b8da-f51c0983ae90"
+PRIVATE_KEY_PATH = r"C:\Users\digim\.kalshi\private_key.pem"
 TG_TOKEN = "8249656817:AAFAI3oulkDWJZHJ7STSYlDfK-_UJCPo-7U"
 TG_CHAT = "5804173449"
 
